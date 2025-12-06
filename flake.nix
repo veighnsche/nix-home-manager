@@ -18,7 +18,18 @@
   outputs = { nixpkgs, home-manager, plasma-manager, ... }:
     let
       system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
+      
+      # Custom packages overlay
+      darkwallOverlay = final: prev: {
+        darkwall-windsurf = final.callPackage ./packages/windsurf.nix { };
+      };
+      
+      # TEAM_426: Allow unfree packages (e.g., windsurf)
+      pkgs = import nixpkgs {
+        inherit system;
+        config.allowUnfree = true;
+        overlays = [ darkwallOverlay ];
+      };
       # TEAM_425: Define config directory once for portable symlinks
       configDir = "/home/vince/.config/nix-home-manager";
     in {

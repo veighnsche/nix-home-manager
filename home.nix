@@ -1,7 +1,13 @@
 # Home-manager config for Fedora KDE (standalone, not NixOS)
 { config, pkgs, lib, configDir, ... }:
 
+let
+  mkWindsurfSymlink = path: {
+    source = config.lib.file.mkOutOfStoreSymlink "${configDir}/dotfiles/windsurf/${path}";
+  };
+in
 {
+
   # ============================================
   # User Identity
   # ============================================
@@ -11,9 +17,24 @@
   programs.home-manager.enable = true;
 
   # ============================================
+  # Non-NixOS Integration
+  # ============================================
+  # Essential for desktop integration (icons, mime types, etc.) on Fedora
+  targets.genericLinux.enable = true;
+  xdg.mime.enable = true;
+  xdg.systemDirs.data = [
+    "${config.home.homeDirectory}/.nix-profile/share"
+    "/nix/var/nix/profiles/default/share"
+  ];
+
+
+  # ============================================
   # Packages
   # ============================================
   home.packages = with pkgs; [
+    # Desktop integration
+    hicolor-icon-theme  # Required for icon theme inheritance
+
     # Better CLI tools
     bat           # cat with syntax highlighting
     eza           # ls replacement
@@ -39,20 +60,20 @@
     # Dev tools
     nodejs_24
     uv            # fast Python package manager (includes uvx)
+
+    # Code editors
+    darkwall-windsurf
   ];
 
   # ============================================
   # WINDSURF
   # ============================================
   # TEAM_425: Direct symlink to repo file - edits reflect immediately without rebuild
-  home.file.".codeium/windsurf/mcp_config.json".source = 
-    config.lib.file.mkOutOfStoreSymlink "${configDir}/dotfiles/windsurf/mcp_config.json";
-
-  home.file.".codeium/windsurf/global_rules.md".source = 
-    config.lib.file.mkOutOfStoreSymlink "${configDir}/dotfiles/windsurf/memories/global_rules.md";
-
-  home.file.".codeium/windsurf/workflows".source = 
-    config.lib.file.mkOutOfStoreSymlink "${configDir}/dotfiles/windsurf/global_workflows";
+  home.file = {
+    ".codeium/windsurf/mcp_config.json" = mkWindsurfSymlink "mcp_config.json";
+    ".codeium/windsurf/memories/global_rules.md" = mkWindsurfSymlink "global_rules.md";
+    ".codeium/windsurf/global_workflows" = mkWindsurfSymlink "workflows";
+  };
 
   # ============================================
   # ZSH
