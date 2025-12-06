@@ -1,6 +1,6 @@
 # TEAM_424: Standalone home-manager for Fedora KDE
 {
-  description = "Vince's home-manager config for Fedora";
+  description = "Vince's home-manager config";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -19,11 +19,14 @@
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
+      # TEAM_425: Define config directory once for portable symlinks
+      configDir = "/home/vince/.config/nix-home-manager";
     in {
       homeConfigurations."vince" = home-manager.lib.homeManagerConfiguration {
         inherit pkgs;
+        extraSpecialArgs = { inherit configDir; };
         modules = [
-          plasma-manager.homeManagerModules.plasma-manager
+          plasma-manager.homeModules.plasma-manager
           ./home.nix
         ];
       };
